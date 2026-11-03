@@ -1,14 +1,14 @@
 import OpenAI from 'openai';
-import { env } from '../config/env.js';
+import { getValidatedOpenAIApiKey } from '../config/env.js';
 
 let openaiClient: OpenAI | null = null;
 
 export const getOpenAIClient = (): OpenAI => {
   if (!openaiClient) {
+    const apiKey = getValidatedOpenAIApiKey();
     openaiClient = new OpenAI({
-      apiKey: env.OPENAI_API_KEY,
+      apiKey,
     });
   }
   return openaiClient;
 };
-
