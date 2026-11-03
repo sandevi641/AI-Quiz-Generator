@@ -2,17 +2,34 @@ import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import { env } from './config/env.js';
 import apiRouter from './routes/index.js';
-import { errorHandler } from './middleware/errorHandler.js';
+import { notFoundHandler } from './middleware/not-found.middleware.js';
+import { errorHandler } from './middleware/error.middleware.js';
 
+/**
+ * Express application factory.
+ * Configures middleware, security, routes, and error handling.
+ * Kept separate from server.ts to enable testing with supertest without port collisions.
+ */
 export const createApp = (): Express => {
   const app = express();
 
-  // Configure CORS for local frontend origin
+  // Configure CORS allowing requests from the configured frontend origin
+  const allowedOrigins = Array.from(
+    new Set([env.CLIENT_URL, 'http://localhost:5173', 'http://127.0.0.1:5173'])
+  );
+
   app.use(
     cors({
-      origin: [env.FRONTEND_URL, 'http://localhost:5173', 'http://127.0.0.1:5173'],
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error(`Origin ${origin} not allowed by CORS`));
+        }
+      },
       credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
     })
   );
@@ -26,24 +43,19 @@ export const createApp = (): Express => {
     res.status(200).json({
       name: 'AI Quiz Generator API',
       status: 'active',
+      version: 'v1',
       healthCheck: '/api/v1/health',
     });
   });
 
-  // Mount API v1 routes
+  // Versioned API v1 Router
   app.use('/api/v1', apiRouter);
 
-  // 404 Route Handler
-  app.use((req: Request, res: Response) => {
-    res.status(404).json({
-      success: false,
-      message: `Route not found: ${req.method} ${req.originalUrl}`,
-    });
-  });
+  // Catch-all 404 handler for unknown routes
+  app.use(notFoundHandler);
 
   // Centralized Error Handling Middleware
   app.use(errorHandler);
 
   return app;
 };
-

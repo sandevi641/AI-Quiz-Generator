@@ -158,7 +158,7 @@ The backend uses `backend/.env.example`. A working template is provided in `back
 ```env
 PORT=5000
 NODE_ENV=development
-FRONTEND_URL=http://localhost:5173
+CLIENT_URL=http://localhost:5173
 OPENAI_API_KEY=your_openai_api_key_here
 OPENAI_MODEL=gpt-4o-mini
 ```
@@ -231,6 +231,7 @@ npm.cmd run build     # Builds production bundles to /frontend/dist
 ### Running Backend Tests & Build
 ```powershell
 Set-Location "C:\Users\LOQ\Desktop\AI-Quiz-Generator\backend"
+npm.cmd run lint      # Runs TypeScript compiler check (tsc --noEmit)
 npm.cmd test          # Runs Supertest API integration tests
 npm.cmd run build     # Compiles TypeScript to /backend/dist
 npm.cmd start         # Runs compiled production server

@@ -7,7 +7,8 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -29,4 +30,3 @@
     "vitest": "^3.0.7"
   }
 }
-
