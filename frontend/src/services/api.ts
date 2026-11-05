@@ -19,15 +19,20 @@ export const apiClient = axios.create({
 
 // ─── Error Normalizer ─────────────────────────────────────────────────────────
 
-/** Converts any thrown value into a structured ApiError */
+/** Converts any thrown error into a clean, user-friendly ApiError */
 export const normalizeApiError = (err: unknown): ApiError => {
   if (err instanceof AxiosError) {
     const status = err.response?.status;
     const serverMessage =
       (err.response?.data as { message?: string } | undefined)?.message;
     if (serverMessage) return { message: serverMessage, status };
-    if (err.code === 'ECONNABORTED') return { message: 'The request timed out. Please try again.' };
-    if (!err.response) return { message: 'Cannot reach the server. Check your connection.' };
+    if (err.code === 'ECONNABORTED')
+      return { message: 'The request timed out. Please try again.', status: 408 };
+    if (!err.response)
+      return {
+        message: 'Cannot connect to backend server. Make sure the backend is running on port 5000.',
+        status: 503,
+      };
     return { message: `Server error (${status ?? 'unknown'}).`, status };
   }
   if (err instanceof Error) return { message: err.message };
@@ -43,42 +48,15 @@ export const checkHealth = async (): Promise<HealthStatus> => {
 };
 
 /**
- * POST /api/v1/quizzes/generate (text input variant)
- *
- * NOTE: This endpoint will be implemented in Phase 2. The function
- * signature and types are ready so the UI can integrate immediately
- * once the backend route exists.
+ * POST /api/v1/quizzes/generate
+ * Calls the backend to generate structured multiple choice questions from study notes.
  */
 export const generateQuizFromText = async (
-  payload: GenerateQuizTextRequest,
+  payload: GenerateQuizTextRequest
 ): Promise<GenerateQuizResponse> => {
   const response = await apiClient.post<GenerateQuizResponse>(
     '/quizzes/generate',
-    payload,
-  );
-  return response.data;
-};
-
-/**
- * POST /api/v1/quizzes/generate (PDF upload variant)
- *
- * Uses multipart/form-data so the server can read the binary file.
- * NOTE: Backend implementation pending Phase 2.
- */
-export const generateQuizFromPdf = async (
-  file: File,
-  numQuestions: number,
-  difficulty: string,
-): Promise<GenerateQuizResponse> => {
-  const formData = new FormData();
-  formData.append('pdf', file);
-  formData.append('numQuestions', String(numQuestions));
-  formData.append('difficulty', difficulty);
-
-  const response = await apiClient.post<GenerateQuizResponse>(
-    '/quizzes/generate',
-    formData,
-    { headers: { 'Content-Type': 'multipart/form-data' } },
+    payload
   );
   return response.data;
 };

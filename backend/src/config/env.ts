@@ -25,9 +25,12 @@ const envSchema = z.object({
     .string()
     .url('CLIENT_URL must be a valid URL (e.g. http://localhost:5173)')
     .default(process.env.FRONTEND_URL || 'http://localhost:5173'),
-  // OpenAI key is optional at server startup, but validated when AI service is invoked
+  // OpenAI key is optional (legacy provider)
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_MODEL: z.string().default('gpt-4o-mini'),
+  // Gemini Configuration (primary provider)
+  GEMINI_API_KEY: z.string().optional(),
+  GEMINI_MODEL: z.string().default('gemini-2.0-flash'),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
@@ -64,6 +67,24 @@ export const getValidatedOpenAIApiKey = (): string => {
   ) {
     throw new Error(
       'OPENAI_API_KEY is not configured. Please supply a valid OpenAI API key in your backend/.env file to use AI features.'
+    );
+  }
+  return key;
+};
+
+/**
+ * Validates and retrieves the Google Gemini API key on demand when the AI service is called.
+ */
+export const getValidatedGeminiApiKey = (): string => {
+  const key = env.GEMINI_API_KEY?.trim();
+  if (
+    !key ||
+    key === 'your_gemini_api_key_here' ||
+    key === 'placeholder_for_phase_2' ||
+    key === 'placeholder_key'
+  ) {
+    throw new Error(
+      'GEMINI_API_KEY is not configured. Please supply a valid Gemini API key in your backend/.env file to use AI features.'
     );
   }
   return key;

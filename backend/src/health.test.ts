@@ -131,6 +131,7 @@ describe('Backend API & Security Integration Tests', () => {
 
       expect(response.status).toBe(404);
       expect(response.body).toEqual({
+        success: false,
         status: 'error',
         message: 'Cannot GET /api/v1/non-existent-endpoint - Route not found',
       });

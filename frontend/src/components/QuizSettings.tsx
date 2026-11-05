@@ -3,18 +3,18 @@ import type { Difficulty, QuestionCount } from '../types';
 import { Settings2, BarChart2, ListChecks } from 'lucide-react';
 
 interface QuizSettingsProps {
-  numQuestions: QuestionCount;
+  questionCount: QuestionCount;
   difficulty: Difficulty;
-  onNumQuestionsChange: (val: QuestionCount) => void;
+  onQuestionCountChange: (val: QuestionCount) => void;
   onDifficultyChange: (val: Difficulty) => void;
 }
 
 const QUESTION_COUNTS: QuestionCount[] = [5, 10, 15];
 
 const DIFFICULTIES: { value: Difficulty; label: string; description: string }[] = [
-  { value: 'easy', label: 'Easy', description: 'Recall and basic comprehension' },
-  { value: 'medium', label: 'Medium', description: 'Application and analysis' },
-  { value: 'hard', label: 'Hard', description: 'Evaluation and synthesis' },
+  { value: 'Easy', label: 'Easy', description: 'Recall and basic comprehension' },
+  { value: 'Medium', label: 'Medium', description: 'Application and analysis' },
+  { value: 'Hard', label: 'Hard', description: 'Evaluation and synthesis' },
 ];
 
 interface OptionButtonProps {
@@ -46,9 +46,9 @@ const OptionButton: React.FC<OptionButtonProps> = ({ active, onClick, children, 
  * Question type is fixed to Multiple Choice for this MVP.
  */
 export const QuizSettings: React.FC<QuizSettingsProps> = ({
-  numQuestions,
+  questionCount,
   difficulty,
-  onNumQuestionsChange,
+  onQuestionCountChange,
   onDifficultyChange,
 }) => {
   const questionCountId = useId();
@@ -88,8 +88,8 @@ export const QuizSettings: React.FC<QuizSettingsProps> = ({
             {QUESTION_COUNTS.map((n) => (
               <OptionButton
                 key={n}
-                active={numQuestions === n}
-                onClick={() => onNumQuestionsChange(n)}
+                active={questionCount === n}
+                onClick={() => onQuestionCountChange(n)}
                 ariaLabel={`${n} questions`}
               >
                 {n}
@@ -143,4 +143,3 @@ export const QuizSettings: React.FC<QuizSettingsProps> = ({
     </section>
   );
 };
-

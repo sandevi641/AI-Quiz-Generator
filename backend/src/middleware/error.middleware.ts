@@ -30,6 +30,7 @@ export const errorHandler = (
   // Handle invalid JSON payload from express.json parser
   if (err instanceof SyntaxError && 'status' in err && err.status === 400 && 'body' in err) {
     res.status(400).json({
+      success: false,
       status: 'error',
       message: 'Invalid JSON payload received in request body',
     });
@@ -39,6 +40,7 @@ export const errorHandler = (
   // Handle Zod schema validation errors
   if (err instanceof ZodError) {
     res.status(400).json({
+      success: false,
       status: 'error',
       message: 'Validation failed',
       errors: err.errors.map((e) => ({
@@ -64,9 +66,9 @@ export const errorHandler = (
       : err.message || 'Internal Server Error';
 
   res.status(statusCode).json({
+    success: false,
     status: 'error',
     message: responseMessage,
     ...(isProduction ? {} : { stack: err.stack }),
   });
 };
-

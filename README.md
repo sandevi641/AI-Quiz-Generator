@@ -14,15 +14,14 @@ Students frequently spend excessive time manually formulating practice questions
 |---|---|---|
 | **Project Foundation & Monorepo Structure** | **Completed** | Phase 1 |
 | **Strict TypeScript & ESLint Environment** | **Completed** | Phase 1 |
-| **Tailwind CSS UI Foundation & Design System** | **Completed** | Phase 1 |
-| **Backend Express Server & Health API (`/api/v1/health`)** | **Completed** | Phase 1 |
-| **Vitest & Supertest Testing Harness** | **Completed** | Phase 1 |
-| **Zod Schema & Error-Handling Middleware** | **Completed** | Phase 1 |
-| **AI Quiz Generation Service (OpenAI SDK)** | *Planned* | Phase 2 |
-| **PDF Lecture Note Extraction (`pdf-parse`)** | *Planned* | Phase 2 |
-| **Interactive Quiz Runner UI & Real-Time Grading** | *Planned* | Phase 3 |
-| **Local Storage Quiz Persistence & History View** | *Planned* | Phase 3 |
-| **Database Persistence (PostgreSQL & Prisma ORM)** | *Future Extension* | Phase 4 |
+| **Tailwind CSS UI Foundation & Design System** | **Completed** | Phase 2 |
+| **Backend Express Server & Health API (`/api/v1/health`)** | **Completed** | Phase 3 |
+| **Security Middleware (Helmet, CORS, Rate Limit, Zod)** | **Completed** | Phase 4 |
+| **AI Quiz Generation API (OpenAI Structured Outputs)** | **Completed** | Phase 5 |
+| **PDF Lecture Note Extraction (`pdf-parse`)** | *Planned* | Phase 6 |
+| **Interactive Quiz Runner UI & Real-Time Grading** | *Planned* | Phase 7 |
+| **Local Storage Quiz Persistence & History View** | *Planned* | Phase 8 |
+| **Database Persistence (PostgreSQL & Prisma ORM)** | *Future Extension* | Future |
 
 ---
 

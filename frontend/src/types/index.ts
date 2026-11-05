@@ -1,28 +1,26 @@
 // ─── Quiz Domain Types ───────────────────────────────────────────────────────
 
+export type Difficulty = 'Easy' | 'Medium' | 'Hard';
+
 export interface QuizQuestion {
-  id: string;
   question: string;
   options: string[];
-  correctAnswerIndex: number;
+  correctAnswer: string;
   explanation: string;
+  difficulty: Difficulty;
 }
 
 export interface Quiz {
-  id: string;
+  id?: string;
   title: string;
-  topic?: string;
   questions: QuizQuestion[];
-  createdAt: string;
+  createdAt?: string;
 }
 
 // ─── Form / Input Types ───────────────────────────────────────────────────────
 
 /** Which tab the user has selected for their study material input */
 export type InputMode = 'notes' | 'pdf';
-
-/** Available difficulty levels */
-export type Difficulty = 'easy' | 'medium' | 'hard';
 
 /** Available question counts */
 export type QuestionCount = 5 | 10 | 15;
@@ -32,22 +30,23 @@ export interface QuizFormValues {
   inputMode: InputMode;
   notes: string;
   pdfFile: File | null;
-  numQuestions: QuestionCount;
+  questionCount: QuestionCount;
   difficulty: Difficulty;
 }
 
 // ─── API Types ────────────────────────────────────────────────────────────────
 
-/** Shape sent to POST /api/v1/quizzes/generate for text-based input */
+/** Shape sent to POST /api/v1/quizzes/generate */
 export interface GenerateQuizTextRequest {
   notes: string;
-  numQuestions: number;
+  questionCount: QuestionCount;
   difficulty: Difficulty;
 }
 
-/** Shape of the backend's quiz generation response (when implemented) */
+/** Shape of the backend's quiz generation response */
 export interface GenerateQuizResponse {
-  quiz: Quiz;
+  success: boolean;
+  data: Quiz;
 }
 
 /** Standard API error shape */

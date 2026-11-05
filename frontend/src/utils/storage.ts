@@ -5,7 +5,7 @@ const STORAGE_KEY = 'ai_quiz_generator_quizzes';
 export const saveQuizToLocalStorage = (quiz: Quiz): void => {
   try {
     const existing = getStoredQuizzes();
-    const updated = [quiz, ...existing.filter((q) => q.id !== quiz.id)];
+    const updated = [quiz, ...existing.filter((q) => (q.id && quiz.id ? q.id !== quiz.id : q.title !== quiz.title))];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   } catch (err) {
     console.error('Failed to save quiz to local storage:', err);
