@@ -131,26 +131,53 @@ export const generateQuiz = async (input: GenerateQuizRequest): Promise<Quiz> =>
     `Please generate a ${difficulty} quiz with exactly ${questionCount} multiple-choice questions based strictly on the study material above.`,
   ].join('\n');
 
-  logger.info(
-    `Requesting quiz generation from Google Gemini (Model: ${env.GEMINI_MODEL}, Count: ${questionCount}, Difficulty: ${difficulty})`
-  );
+  const modelsToTry = [env.GEMINI_MODEL];
+  if (env.GEMINI_MODEL !== 'gemini-3.1-flash-lite') {
+    modelsToTry.push('gemini-3.1-flash-lite');
+  }
 
   let responseText: string | undefined;
+  let lastError: unknown = null;
 
-  try {
-    const response = await client.models.generateContent({
-      model: env.GEMINI_MODEL,
-      contents: userPrompt,
-      config: {
-        systemInstruction: systemPrompt,
-        temperature: 0.2, // Low temperature ensures factual grounding and consistency
-        responseMimeType: 'application/json',
-        responseSchema: quizResponseSchema,
-      },
-    });
+  for (const currentModel of modelsToTry) {
+    try {
+      logger.info(
+        `Requesting quiz generation from Google Gemini (Model: ${currentModel}, Count: ${questionCount}, Difficulty: ${difficulty})`
+      );
 
-    responseText = response.text;
-  } catch (error: unknown) {
+      const response = await client.models.generateContent({
+        model: currentModel,
+        contents: userPrompt,
+        config: {
+          systemInstruction: systemPrompt,
+          temperature: 0.2, // Low temperature ensures factual grounding and consistency
+          responseMimeType: 'application/json',
+          responseSchema: quizResponseSchema,
+        },
+      });
+
+      responseText = response.text;
+      if (responseText) {
+        break; // Successfully got response
+      }
+    } catch (error: unknown) {
+      lastError = error;
+
+      if (error instanceof ApiError && (error.status === 503 || error.status === 404)) {
+        logger.warn(
+          `Gemini model ${currentModel} returned HTTP ${error.status}. Checking if a fallback model is available...`
+        );
+        continue; // Try next model in candidate list
+      }
+
+      // If it's auth (400/401/403) or rate limit, break immediately
+      break;
+    }
+  }
+
+  if (!responseText && lastError) {
+    const error = lastError;
+
     // 1. Re-throw known AppErrors directly
     if (error instanceof AppError) {
       throw error;
@@ -159,7 +186,18 @@ export const generateQuiz = async (input: GenerateQuizRequest): Promise<Quiz> =>
     // 2. Handle Google GenAI ApiError instances specifically
     if (error instanceof ApiError) {
       const status = error.status || 500;
-      const msg = error.message || '';
+      let msg = error.message || '';
+
+      // Extract human-readable error text if Google returned JSON error payload
+      try {
+        const parsed = JSON.parse(msg);
+        if (parsed?.error?.message) {
+          msg = parsed.error.message;
+        }
+      } catch {
+        // Keep original string if not JSON
+      }
+
       logger.error(`Google Gemini API error [${status}]: ${msg}`);
 
       // Check for Invalid or Expired API Key
@@ -195,16 +233,16 @@ export const generateQuiz = async (input: GenerateQuizRequest): Promise<Quiz> =>
         );
       }
 
-      // Check for Temporary Service Unavailable
+      // Check for Temporary High Demand
       if (status === 503) {
         throw new AppError(
-          'Google Gemini service is temporarily unavailable. Please try again in a few moments.',
+          `Google Gemini service is temporarily experiencing high demand: "${msg}". Please try again in a moment.`,
           503
         );
       }
 
       throw new AppError(
-        `Gemini API error: ${msg || 'An error occurred while communicating with Google Gemini.'}`,
+        `Gemini API error [${status}]: ${msg || 'An error occurred while communicating with Google Gemini.'}`,
         status >= 400 && status < 600 ? status : 502
       );
     }
